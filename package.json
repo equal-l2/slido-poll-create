@@ -1,0 +1,19 @@
+{
+  "name": "pup-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "puppeteer-core": "^1.19.0"
+  },
+  "devDependencies": {
+    "@types/puppeteer-core": "^1.9.0",
+    "@types/node": "^12.6.8"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
