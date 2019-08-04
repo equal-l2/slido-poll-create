@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "puppeteer-core": "^1.19.0"
+    "puppeteer": "^1.19.0"
   },
   "devDependencies": {
-    "@types/node": "^12.6.8",
-    "@types/puppeteer-core": "^1.9.0",
+    "@types/node": "^12.6.9",
+    "@types/puppeteer": "^1.19.0",
+    "eslint": "^6.1.0",
+    "prettier": "^1.18.2",
     "typescript": "^3.5.3"
   },
   "scripts": {
@@ -16,5 +18,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "prettier": {
+      "tabWidth": 4,
+      "arrowParens": "always"
+  }
 }
