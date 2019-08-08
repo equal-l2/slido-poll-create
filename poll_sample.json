@@ -1,0 +1,9 @@
+{
+    "desc": "insert description here",
+    "options": [
+        {"name": "an option"},
+        {"name": "an correct option", "correct":true},
+        {"name": "a mundane option again"},
+        {"name": "you can have multiple correct answers :)", "correct":true}
+    ]
+}

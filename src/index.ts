@@ -20,19 +20,29 @@ interface Credential {
     pass: string;
 }
 
+// ログイン画面の処理
 async function login(page: Page, email: string, pass: string): Promise<Page> {
     const slidoLoginPage = "https://accounts.sli.do/login";
     await page.goto(slidoLoginPage, { waitUntil: "domcontentloaded"});
     console.log("Logging in...");
+
+    // 改行文字をフォームに打ち込むとログインボタンを
+    // 押した時と同じ動作をする
     await page.type("#emailInput", email + "\n");
+
+    // フォームに入力したメールアドレスがGoogleアカウントと
+    // 連携している場合、Googleのログインページに飛ばされる
+    // ので、sli.doのログインページと両方対応できるように
+    // どちらかのフォームが読み込まれるまで待つ
     await page.waitForSelector("#passwordInput, #identifierNext");
+
     if (page.url().startsWith(slidoLoginPage)) {
         /* sli.do account */
         console.log("Login with sli.do account");
         await page.type("#passwordInput", pass + "\n");
     } else {
         /* Google account */
-        // E-mail address (should be filled already)
+        // E-mail address (ページへ移動した時点で入力されている)
         console.log("Login with Google account");
         await page.click("#identifierNext");
 
@@ -45,17 +55,20 @@ async function login(page: Page, email: string, pass: string): Promise<Page> {
     return page;
 }
 
-async function openNewPollOfEvent(page: Page, name: string): Promise<void> {
-    // イベントの管理画面を開く
-    const eventSelector = "div.event-item span";
+// 指定されたイベントのPolls管理画面を開く
+// ログイン後イベントリストの画面にいる状態を前提としている
+async function openPollsOfEvent(page: Page, name: string): Promise<void> {
+    const eventSelector = "div.event-item span"; // イベント名要素のセレクタ
     await page.waitForSelector(eventSelector);
     const es = await page.$$(eventSelector);
-    if (es === []) {
+    if (es === []) { // イベント名要素が一つもないとき
         throw new FriendlyError("Event not found");
     }
+
+    // 各要素を見てイベント名と合致するか調べる
     let elem = null;
     for (const e of es) {
-        const toe = await page.evaluate((e): string => {
+        const toe = await page.evaluate((e) => {
             return e.innerText;
         }, e);
         if (toe === name) {
@@ -63,10 +76,12 @@ async function openNewPollOfEvent(page: Page, name: string): Promise<void> {
             break;
         }
     }
-    if (!elem) {
+    if (!elem) { // 合致するイベントがなかったとき
         throw new FriendlyError("Event not found");
     }
-    await page.evaluate((e): void => {
+
+    // イベント名要素をクリック
+    await page.evaluate((e) => {
         e.click();
     }, elem);
     await page.waitForNavigation({waitUntil: "domcontentloaded"});
@@ -77,9 +92,15 @@ async function openNewPollOfEvent(page: Page, name: string): Promise<void> {
         waitUntil: "domcontentloaded"
     });
     console.log("Opened Polls page");
-    await page.waitFor(2000); // 急ぎすぎるとPoll個数の上限を超えていても設定画面に入れてしまう
+
+    // Polls画面を開いてすぐに新規作成しようとすると
+    // 上限を超えていても作成画面に入れてしまうため
+    // 2秒待つ
+    await page.waitFor(2000);
 }
 
+// 新しいPollを作成する
+// 対象イベントのPollsにいる状態を前提としている
 async function createPoll(page: Page, poll: Poll): Promise<void> {
     // Poll作成ダイアログを開く
     const pollButton = "div.create-component__placeholder";
@@ -87,7 +108,7 @@ async function createPoll(page: Page, poll: Poll): Promise<void> {
     await page.click(pollButton);
     console.log("Opened Create Poll page");
 
-    // Multiple Choicesを選択
+    // Pollsの種類からMultiple Choicesを選択
     const optionsButton = "li.select-boxed-item[ng-click*=\"('options')\"]";
     await page.waitForSelector(optionsButton, { timeout: 1000 }).catch((e): void => {
         if (e instanceof puppeteer.errors.TimeoutError) {
@@ -99,21 +120,26 @@ async function createPoll(page: Page, poll: Poll): Promise<void> {
     await page.click(optionsButton);
     console.log("Opened Multiple Choice Poll page");
 
+    // "Mark correct answer"をオンにする
     const allowCorrectSelector = "label[ng-model$=allow_correct_answers]";
     await page.click(allowCorrectSelector);
 
+    // 説明文を入力する
     const descSelector = "textarea[name=questionText0]";
     await page.waitForSelector(descSelector);
     await page.type(descSelector, poll.desc);
 
+    // 選択肢を入力する
     const ops: PollOption[] = poll.options;
     let hasCorrectAns = false;
     let opcnt = 0;
     for (const op of ops) {
+        // 選択肢フォームにテキストを入力
         const textarea = `textarea[name$='${opcnt}_${opcnt}']`;
         await page.waitForSelector(textarea);
         await page.type(textarea, op.name);
-        if (op.correct) {
+        if (op.correct) { // 正解選択肢の場合
+            // 正解選択肢ボタンをクリックする
             const eHandle = await page.$(textarea);
             if (!eHandle) {
                 throw new Error("Malformed page structure");
@@ -128,11 +154,15 @@ async function createPoll(page: Page, poll: Poll): Promise<void> {
         }
         opcnt++;
     }
-    if (!hasCorrectAns) {
+
+    if (!hasCorrectAns) { // 正解選択肢がなかった場合
+        // "Mark correct answer"をもう一度クリックしてオフにする
         await page.click(allowCorrectSelector);
     }
+
+    // 投稿
     await page.click('button[type="submit"]');
-    await page.waitFor(1000); // ページをすぐ閉じると上手く送信されない感じ
+    await page.waitFor(1000); // ページをすぐ閉じると上手く送信されない
     console.log("Poll created");
 }
 
@@ -141,20 +171,19 @@ async function run(
     eventName: string,
     polls: Poll[]
 ): Promise<void> {
-    const browser = await puppeteer.launch({ headless: false });
+    // ブラウザを起動
+    const browser = await puppeteer.launch({ headless: true });
 
     try {
-        const page = await browser.newPage();
-        await page.setDefaultTimeout(5000);
-        await login(page, credential.email, credential.pass);
-        await openNewPollOfEvent(page, eventName);
+        const page = await browser.newPage(); // 新規ページを開く
+        await page.setDefaultTimeout(5000); // タイムアウトを5秒に設定
+        await login(page, credential.email, credential.pass); // ログイン
+        await openPollsOfEvent(page, eventName); // Pollsを開く
         for (const poll of polls) {
-            await createPoll(page, poll);
+            await createPoll(page, poll); // Pollを作成
         }
-    } catch (e) {
-        //
     } finally {
-        await browser.close();
+        await browser.close(); // ブラウザを閉じる
     }
 }
 
@@ -164,11 +193,11 @@ function usage(): void {
 
 function main(): void {
     // <args> ::= <event name> <poll>*
-    const credential = JSON.parse(
+    const credential = JSON.parse( // credentialを読み取る
         fs.readFileSync("credential.json").toString()
     );
-    const ename = process.argv[2];
-    const pollFiles = process.argv.slice(3);
+    const ename = process.argv[2]; // イベント名
+    const pollFiles = process.argv.slice(3); // Pollのファイル名
 
     if (!ename) {
         usage();
@@ -176,7 +205,7 @@ function main(): void {
         usage();
     } else {
         console.log(`Using ${ename} as event name`);
-        const polls = pollFiles.map(
+        const polls = pollFiles.map( // Pollを読み取る
             (s: string): Poll => {
                 console.log(`Reading ${s} as a poll definition`);
                 const data = fs.readFileSync(s).toString();
