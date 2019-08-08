@@ -1,5 +1,5 @@
 {
-    "desc": "insert description here",
+    "question": "insert description here",
     "options": [
         {"name": "an option"},
         {"name": "an correct option", "correct":true},

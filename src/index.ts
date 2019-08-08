@@ -11,7 +11,7 @@ interface PollOption {
 }
 
 interface Poll {
-    desc: string;
+    question: string;
     options: PollOption[];
 }
 
@@ -124,10 +124,10 @@ async function createPoll(page: Page, poll: Poll): Promise<void> {
     const allowCorrectSelector = "label[ng-model$=allow_correct_answers]";
     await page.click(allowCorrectSelector);
 
-    // 説明文を入力する
-    const descSelector = "textarea[name=questionText0]";
-    await page.waitForSelector(descSelector);
-    await page.type(descSelector, poll.desc);
+    // 質問文を入力する
+    const questionSelector = "textarea[name=questionText0]";
+    await page.waitForSelector(questionSelector);
+    await page.type(questionSelector, poll.question);
 
     // 選択肢を入力する
     const ops: PollOption[] = poll.options;
