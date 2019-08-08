@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "ora": "^3.4.0",
     "puppeteer": "^1.19.0"
   },
   "devDependencies": {
