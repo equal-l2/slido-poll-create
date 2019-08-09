@@ -58,7 +58,7 @@ async function login(page: Page, email: string, pass: string): Promise<Page> {
     } catch (e) {
         o.fail("Could not login");
         if (e instanceof puppeteer.errors.TimeoutError) {
-            throw new FriendlyError("Login failed, possibly due to wrong credential");
+            throw new FriendlyError("Login failed, possibly due to wrong credential, or captcha");
         } else {
             throw e;
         }
