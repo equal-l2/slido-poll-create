@@ -1,0 +1,45 @@
+arpscan
+========
+
+## 前提
+- node
+
+## 設定ファイル
+以下の設定ファイルが必要となる。
+
+- credential.json
+アカウントのメールアドレス・パスワードを記載する。
+
+```
+{
+    "email": "メールアドレスを入力する",
+    "pass": "パスワードを入力する"
+}
+```
+
+- Live Poll定義ファイル
+作成するLive Pollを定義する
+
+```
+{
+    "question": "質問文",
+    "options": [
+        {"name": "選択肢"},
+        {"name": "正解選択肢はcorrectでマークする", "correct":true},
+        {"name": "正解選択肢は複数あってもよい", "correct":true}
+    ]
+}
+```
+
+## 使い方
+
+1. `npm install`で依存関係をインストールする
+
+2. `npm build`でコンパイルする
+
+2. 実行する
+Live Poll定義ファイルが1個以上必要となる。
+
+```
+    $ node dist/index.js <イベント名> <Live Poll定義ファイル1> <Live Poll定義ファイル2> ...
+```
