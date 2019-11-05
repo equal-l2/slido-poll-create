@@ -4,16 +4,16 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@types/node": "^12.7.1",
-    "@types/puppeteer": "^1.19.0",
+    "@types/node": "^12.12.6",
+    "@types/puppeteer": "^1.20.2",
     "ora": "^3.4.0",
-    "puppeteer": "^1.19.0",
-    "typescript": "^3.5.3"
+    "puppeteer": "^1.20.0",
+    "typescript": "^3.7.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
-    "eslint": "^6.1.0",
+    "eslint": "^6.6.0",
     "prettier": "^1.18.2"
   },
   "scripts": {
