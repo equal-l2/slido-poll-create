@@ -1,4 +1,4 @@
-arpscan
+slido-create-poll
 ========
 
 ## 前提
@@ -31,11 +31,13 @@ arpscan
 }
 ```
 
+以上の設定ファイルのサンプルはそれぞれ `credential_sample.json`、`poll_sample.json`にある。
+
 ## 使い方
 
 1. `npm install`で依存関係をインストールする
 
-2. `npm build`でコンパイルする
+2. `npm run build`でコンパイルする
 
 2. 実行する
 Live Poll定義ファイルが1個以上必要となる。
